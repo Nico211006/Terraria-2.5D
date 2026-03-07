@@ -1,12 +1,18 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Movement")]
     public float moveSpeed = 5f;
     public float jumpForce = 7f;
 
+    [Header("Ground Check")]
+    public Transform groundCheck;
+    public float groundCheckRadius = 0.3f;
+    public LayerMask groundLayer;
+
     private Rigidbody rb;
+    private float moveInput;
     private bool isGrounded;
 
     void Start()
@@ -16,41 +22,26 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        float moveInput = 0f;
+        moveInput = Input.GetAxisRaw("Horizontal");
 
-        if (Keyboard.current.aKey.isPressed)
-            moveInput = -1f;
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
 
-        if (Keyboard.current.dKey.isPressed)
-            moveInput = 1f;
-
-        Vector3 velocity = rb.linearVelocity;
-        velocity.x = moveInput * moveSpeed;
-        rb.linearVelocity = velocity;
-
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && isGrounded)
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            velocity = rb.linearVelocity;
-            velocity.y = 0f;
-            rb.linearVelocity = velocity;
-
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, 0f);
         }
     }
 
-    void OnCollisionStay(Collision collision)
+    void FixedUpdate()
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
+        rb.linearVelocity = new Vector3(moveInput * moveSpeed, rb.linearVelocity.y, 0f);
     }
 
-    void OnCollisionExit(Collision collision)
+    void OnDrawGizmosSelected()
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+        if (groundCheck == null) return;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }
 }
