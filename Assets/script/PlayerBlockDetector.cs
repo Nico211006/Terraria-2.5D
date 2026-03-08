@@ -2,31 +2,60 @@ using UnityEngine;
 
 public class PlayerBlockDetector : MonoBehaviour
 {
-    public GameObject testBlock;
+    public Transform blockCheckPoint;
+    public float blockCheckRadius = 0.7f;
+    public float breakInterval = 0.5f;
 
-    public float breakTime = 2f; // Zeit zum Abbauen
-    private float breakProgress = 0f;
+    private float breakTimer = 0f;
 
     void Update()
     {
         if (Input.GetKey(KeyCode.E))
         {
-            if (testBlock != null)
+            breakTimer += Time.deltaTime;
+
+            if (breakTimer >= breakInterval)
             {
-                breakProgress += Time.deltaTime;
-
-                Debug.Log("Abbau Fortschritt: " + breakProgress);
-
-                if (breakProgress >= breakTime)
-                {
-                    Debug.Log("Block zerstört: " + testBlock.name);
-                    Destroy(testBlock);
-                }
+                TryBreakBlock();
+                breakTimer = 0f;
             }
         }
         else
         {
-            breakProgress = 0f;
+            breakTimer = 0f;
         }
+    }
+
+    void TryBreakBlock()
+    {
+        if (blockCheckPoint == null)
+        {
+            Debug.Log("BlockCheckPoint fehlt");
+            return;
+        }
+
+        Collider[] hits = Physics.OverlapSphere(blockCheckPoint.position, blockCheckRadius);
+
+        foreach (Collider hit in hits)
+        {
+            BlockHealth blockHealth = hit.GetComponent<BlockHealth>();
+
+            if (blockHealth != null)
+            {
+                blockHealth.TakeDamage(1);
+                Debug.Log("Block getroffen: " + hit.name);
+                return;
+            }
+        }
+
+        Debug.Log("Kein Block getroffen");
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (blockCheckPoint == null) return;
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(blockCheckPoint.position, blockCheckRadius);
     }
 }
