@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3314000426908605880}
   - component: {fileID: 4909999254497163435}
   - component: {fileID: 220397215292461917}
-  - component: {fileID: 2600001325069259367}
+  - component: {fileID: 7429452040304144761}
   m_Layer: 0
   m_Name: BlockDrop 1
   m_TagString: Untagged
@@ -110,7 +110,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -155,9 +155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 730cc543a3eca7243ad8a659c882c057, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
-  rotateSpeed: 100
-  lifeTime: 15
---- !u!114 &2600001325069259367
+--- !u!114 &7429452040304144761
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -166,11 +164,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 283543733968480861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 730cc543a3eca7243ad8a659c882c057, type: 3}
+  m_Script: {fileID: 11500000, guid: a1c275d874b19bd46906e5e4128b0d82, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
-  rotateSpeed: 100
-  lifeTime: 15
+  m_EditorClassIdentifier: Assembly-CSharp::BlockItem
+  itemData: {fileID: 11400000, guid: 5a6774d69bb2e704483bdef6f3f47761, type: 2}
 --- !u!1 &9162722142004057982
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,3 +234,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f15fc8f2aae15f843b5e72ac07a5787e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupTriggerForwarder
+  itemPickup: {fileID: 0}

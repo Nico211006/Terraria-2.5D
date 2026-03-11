@@ -1,2 +1,22 @@
 fileFormatVersion: 2
 guid: 855f858a300588e49a06bfdd5d8a66ec
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - grassMaterial: {fileID: 2100000, guid: 3d381929e5db16b428c4a3037c83b6b5, type: 2}
+  - dirtMaterial: {fileID: 2100000, guid: 54de642868fa897498435d432542c1a7, type: 2}
+  - stoneMaterial: {fileID: 2100000, guid: 39e01e3c8ff23254ca81e9b0bd7a197e, type: 2}
+  - coalOreMaterial: {fileID: 2100000, guid: 75fad4622a7c6c44b8a7b6c0145da06f, type: 2}
+  - copperOreMaterial: {fileID: 2100000, guid: 9b675d7fb240a384cba8510c5bfceac6, type: 2}
+  - ironOreMaterial: {fileID: 2100000, guid: 6237dc986b551d44f83d2f94c1b057ce, type: 2}
+  - woodMaterial: {fileID: 2100000, guid: b4d7b43dc260ded46bc9d0e1e7547d1f, type: 2}
+  - leavesMaterial: {fileID: 2100000, guid: c8826a2f8559ee04e989471996e37a60, type: 2}
+  - woodPlankMaterial: {fileID: 2100000, guid: aa6be8d2b3693a84eb4238e3c4736355, type: 2}
+  - workbenchMaterial: {fileID: 2100000, guid: 780af3fef999a694792003c578923da7, type: 2}
+  - furnaceMaterial: {fileID: 2100000, guid: 0ef0065081fe0ab45970b38f941620aa, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

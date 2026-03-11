@@ -2,13 +2,14 @@ using UnityEngine;
 
 public class BlockPlacer : MonoBehaviour
 {
-    public GameObject dirtPrefab;
-    public GameObject stonePrefab;
-    public GameObject grassPrefab;
-
     public Camera mainCamera;
-    public float buildPlaneZ = 0f;
-    public float gridSize = 1f;
+    public float placeDistance = 100f;
+
+    private void Start()
+    {
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+    }
 
     private void Update()
     {
@@ -22,86 +23,147 @@ public class BlockPlacer : MonoBehaviour
     {
         if (HotbarSelector.Instance == null)
         {
-            Debug.LogWarning("HotbarSelector fehlt!");
+            Debug.Log("BlockPlacer: HotbarSelector fehlt.");
             return;
         }
 
         if (InventoryManager.Instance == null)
         {
-            Debug.LogWarning("InventoryManager fehlt!");
+            Debug.Log("BlockPlacer: InventoryManager fehlt.");
+            return;
+        }
+
+        if (GridWorldBuilder.instance == null)
+        {
+            Debug.Log("BlockPlacer: GridWorldBuilder fehlt.");
             return;
         }
 
         if (mainCamera == null)
         {
-            Debug.LogWarning("Main Camera fehlt im BlockPlacer!");
+            Debug.Log("BlockPlacer: Kamera fehlt.");
             return;
         }
 
-        string selectedItem = HotbarSelector.Instance.GetSelectedItemName();
-        Debug.Log("Ausgewähltes Item: " + selectedItem);
-
-        if (string.IsNullOrEmpty(selectedItem))
+        ItemData selectedItem = HotbarSelector.Instance.GetSelectedItemData();
+        if (selectedItem == null)
         {
-            Debug.Log("Kein platzierbares Item ausgewählt.");
+            Debug.Log("BlockPlacer: Kein Item ausgewählt.");
             return;
         }
 
-        if (!InventoryManager.Instance.HasItem(selectedItem, 1))
+        BlockType blockTypeToPlace;
+        if (!TryGetBlockTypeFromItem(selectedItem, out blockTypeToPlace))
         {
-            Debug.Log("Item nicht im Inventar: " + selectedItem);
+            Debug.Log("BlockPlacer: Item ist nicht platzierbar: " + selectedItem.itemName);
             return;
         }
 
-        Plane buildPlane = new Plane(Vector3.forward, new Vector3(0f, 0f, buildPlaneZ));
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit[] hits = Physics.RaycastAll(ray, placeDistance);
 
-        if (!buildPlane.Raycast(ray, out float enter))
+        if (hits == null || hits.Length == 0)
         {
-            Debug.Log("Maus trifft Bauebene nicht.");
+            Debug.Log("BlockPlacer: Raycast hat nichts getroffen.");
             return;
         }
 
-        Vector3 worldPos = ray.GetPoint(enter);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-        Vector3 placePos = new Vector3(
-            Mathf.Round(worldPos.x / gridSize) * gridSize,
-            Mathf.Round(worldPos.y / gridSize) * gridSize,
-            buildPlaneZ
-        );
+        Block hitBlock = null;
 
-        Collider[] overlaps = Physics.OverlapBox(placePos, Vector3.one * 0.4f);
-        if (overlaps.Length > 0)
+        for (int i = 0; i < hits.Length; i++)
         {
-            Debug.Log("Platz ist schon belegt.");
+            if (hits[i].collider == null)
+                continue;
+
+            Block block = hits[i].collider.GetComponent<Block>();
+            if (block != null)
+            {
+                hitBlock = block;
+                break;
+            }
+        }
+
+        if (hitBlock == null)
+        {
+            Debug.Log("BlockPlacer: Kein Block im Raycast gefunden.");
             return;
         }
 
-        GameObject prefabToPlace = GetPrefabForItem(selectedItem);
-        if (prefabToPlace == null)
+        int targetGridX = hitBlock.gridX;
+        int targetGridY = hitBlock.gridY + 1;
+
+        if (!GridWorldBuilder.instance.IsAirAt(targetGridX, targetGridY))
         {
-            Debug.LogWarning("Kein Prefab gefunden für: " + selectedItem);
+            Debug.Log("BlockPlacer: Ziel ist nicht frei.");
             return;
         }
 
-        Instantiate(prefabToPlace, placePos, Quaternion.identity);
-        InventoryManager.Instance.RemoveItem(selectedItem, 1);
+        GridWorldBuilder.instance.PlaceBlockAt(targetGridX, targetGridY, blockTypeToPlace);
+        InventoryManager.Instance.RemoveOneFromHotbarSlot(HotbarSelector.Instance.GetSelectedSlotIndex());
 
-        Debug.Log("Block platziert: " + selectedItem + " bei " + placePos);
+        Debug.Log("Block platziert: " + blockTypeToPlace + " bei X=" + targetGridX + " Y=" + targetGridY);
     }
 
-    private GameObject GetPrefabForItem(string itemName)
+    private bool TryGetBlockTypeFromItem(ItemData itemData, out BlockType blockType)
     {
+        blockType = BlockType.Air;
+
+        if (itemData == null || string.IsNullOrWhiteSpace(itemData.itemName))
+            return false;
+
+        string itemName = itemData.itemName.Trim();
+
         switch (itemName)
         {
-            case "Erde":
-                return dirtPrefab;
-            case "Stein":
-                return stonePrefab;
             case "Gras":
-                return grassPrefab;
+                blockType = BlockType.Grass;
+                return true;
+
+            case "Erde":
+                blockType = BlockType.Dirt;
+                return true;
+
+            case "Stein":
+                blockType = BlockType.Stone;
+                return true;
+
+            case "Kohle":
+                blockType = BlockType.CoalOre;
+                return true;
+
+            case "Kupfererz":
+                blockType = BlockType.CopperOre;
+                return true;
+
+            case "Eisenerz":
+                blockType = BlockType.IronOre;
+                return true;
+
+            case "Holz":
+                blockType = BlockType.Wood;
+                return true;
+
+            case "Blätter":
+                blockType = BlockType.Leaves;
+                return true;
+
+            case "Holzplanken":
+                blockType = BlockType.WoodPlank;
+                return true;
+
+            case "Werkbank":
+                blockType = BlockType.Workbench;
+                return true;
+
+            case "Ofen":
+                blockType = BlockType.Furnace;
+                return true;
+
             default:
-                return null;
+                Debug.Log("Dieses Item kann nicht als Block platziert werden: " + itemData.itemName);
+                return false;
         }
     }
 }
